@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bozor – onlayn do‘kon</title>
+<style>
+:root{--bg:#f4f3f8;--card:#fff;--ink:#1c1830;--mute:#6f6a85;--line:#e4e1ee;--accent:#6a2fd0;--accent-ink:#fff;--sale:#e5365a;--tile:#efeaff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#13111c;--card:#1d1a2b;--ink:#ece9f7;--mute:#9a94b3;--line:#2d2940;--accent:#9b6cff;--accent-ink:#120a26;--sale:#ff5c7f;--tile:#272244}}
+:root[data-theme="dark"]{--bg:#13111c;--card:#1d1a2b;--ink:#ece9f7;--mute:#9a94b3;--line:#2d2940;--accent:#9b6cff;--accent-ink:#120a26;--sale:#ff5c7f;--tile:#272244}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--card);border-bottom:1px solid var(--line)}
+.row{display:flex;align-items:center;gap:12px;max-width:1100px;margin:0 auto;padding:10px 16px}
+.logo{font-weight:800;font-size:22px;color:var(--accent)}
+.search{flex:1;min-width:0;padding:10px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit}
+.cartbtn{border:0;background:var(--accent);color:var(--accent-ink);border-radius:10px;padding:10px 14px;font:inherit;font-weight:600;cursor:pointer;white-space:nowrap}
+.cats{max-width:1100px;margin:0 auto;padding:0 16px 10px;display:flex;gap:8px;overflow-x:auto}
+.cat{flex:none;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:20px;padding:6px 14px;font:inherit;cursor:pointer}
+.cat.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+main{max-width:1100px;margin:0 auto;padding:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.p{background:var(--card);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;border:1px solid var(--line)}
+.pic{background:var(--tile);aspect-ratio:1;display:grid;place-items:center;font-size:56px;position:relative}
+.off{position:absolute;top:8px;left:8px;background:var(--sale);color:#fff;font-size:12px;font-weight:700;padding:2px 8px;border-radius:6px}
+.pb{padding:10px;display:flex;flex-direction:column;gap:4px;flex:1}
+.pn{font-size:14px;min-height:2.8em}
+.rt{font-size:13px;color:var(--mute)}
+.old{font-size:13px;color:var(--mute);text-decoration:line-through}
+.pr{font-weight:700;font-size:17px}
+.add{margin-top:auto;border:1px solid var(--accent);background:none;color:var(--accent);border-radius:8px;padding:8px;font:inherit;font-weight:600;cursor:pointer}
+.add:hover{background:var(--accent);color:var(--accent-ink)}
+.none{color:var(--mute);text-align:center;padding:40px 0}
+.shade{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;z-index:9}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(400px,100%);background:var(--card);z-index:10;display:none;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body.cart .shade{display:block}
+body.cart .drawer{display:flex}
+.dh{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line);font-weight:700;font-size:18px}
+.x{border:0;background:none;color:var(--ink);font-size:24px;cursor:pointer}
+.items{flex:1;overflow-y:auto;padding:8px 16px}
+.ci{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.ci .em{font-size:30px;width:48px;height:48px;background:var(--tile);border-radius:8px;display:grid;place-items:center}
+.ci .in{flex:1;min-width:0;font-size:14px}
+.qty{display:flex;align-items:center;gap:8px}
+.qty button{width:28px;height:28px;border-radius:50%;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer;font-size:16px}
+.df{padding:14px 16px;border-top:1px solid var(--line)}
+.tot{display:flex;justify-content:space-between;font-weight:700;font-size:18px;margin-bottom:10px}
+.buy{width:100%;border:0;background:var(--accent);color:var(--accent-ink);border-radius:10px;padding:12px;font:inherit;font-weight:700;cursor:pointer}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;display:none;z-index:20;max-width:90%}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.fm{display:grid;gap:8px;margin-bottom:10px}.fm input{padding:10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit}
+</style>
+</head>
+<body>
+<header>
+  <div class="row">
+    <div class="logo">Bozor</div>
+    <input class="search" id="q" placeholder="Mahsulot qidirish" aria-label="Qidirish">
+    <button class="cartbtn" id="open">Savat (<span id="cnt">0</span>)</button>
+  </div>
+  <div class="cats" id="cats"></div>
+</header>
+<main>
+  <div class="grid" id="grid"></div>
+  <div class="none" id="none" hidden>Hech narsa topilmadi. Boshqa so‘z bilan qidirib ko‘ring.</div>
+</main>
+<div class="shade" id="shade"></div>
+<aside class="drawer" aria-label="Savat">
+  <div class="dh"><span>Savat</span><button class="x" id="close" aria-label="Yopish">×</button></div>
+  <div class="items" id="items"></div>
+  <div class="df">
+    <div class="fm"><input id="nm" placeholder="Ismingiz" autocomplete="name"><input id="ph" type="tel" placeholder="Telefon: +998 90 123 45 67" autocomplete="tel"><input id="ad" placeholder="Yetkazib berish manzili" autocomplete="street-address"></div>
+    <div class="tot"><span>Jami</span><span id="total">0 soʻm</span></div>
+    <button class="buy" id="buy">Buyurtma berish</button>
+  </div>
+</aside>
+<div class="toast" id="toast"></div>
+<script>
+var P=[];
+var cat="Hammasi",term="",cart={};
+try{var s=localStorage.getItem("bozor-cart");if(s)cart=JSON.parse(s)||{}}catch(e){}
+function $(i){return document.getElementById(i)}
+function som(n){return n.toLocaleString("ru-RU").replace(/\u00a0/g," ")+" soʻm"}
+function save(){try{localStorage.setItem("bozor-cart",JSON.stringify(cart))}catch(e){}}
+function toast(t){var e=$("toast");e.textContent=t;e.style.display="block";clearTimeout(toast.t);toast.t=setTimeout(function(){e.style.display="none"},1800)}
+function drawCats(){
+  var cs=["Hammasi"];P.forEach(function(x){if(cs.indexOf(x.c)<0)cs.push(x.c)});
+  var b=$("cats");b.textContent="";
+  cs.forEach(function(c){var k=document.createElement("button");k.className="cat"+(c===cat?" on":"");k.textContent=c;k.onclick=function(){cat=c;drawCats();drawGrid()};b.appendChild(k)});
+}
+function drawGrid(){
+  var g=$("grid");g.textContent="";
+  var list=P.filter(function(x){return (cat==="Hammasi"||x.c===cat)&&x.n.toLowerCase().indexOf(term)>=0});
+  $("none").hidden=list.length>0;
+  list.forEach(function(x){
+    var d=document.createElement("div");d.className="p";
+    var pic=document.createElement("div");pic.className="pic";pic.textContent=x.e;
+    if(x.o){var o=document.createElement("span");o.className="off";o.textContent="−"+Math.round((1-x.p/x.o)*100)+"%";pic.appendChild(o)}
+    var b=document.createElement("div");b.className="pb";
+    var n=document.createElement("div");n.className="pn";n.textContent=x.n;
+    var r=document.createElement("div");r.className="rt";r.textContent="★ "+x.r;
+    var pr=document.createElement("div");pr.className="pr";pr.textContent=som(x.p);
+    b.appendChild(n);b.appendChild(r);
+    if(x.o){var ol=document.createElement("div");ol.className="old";ol.textContent=som(x.o);b.appendChild(ol)}
+    b.appendChild(pr);
+    var a=document.createElement("button");a.className="add";a.textContent="Savatga qoʻshish";
+    a.onclick=function(){cart[x.id]=(cart[x.id]||0)+1;save();drawCart();toast("Savatga qoʻshildi")};
+    b.appendChild(a);d.appendChild(pic);d.appendChild(b);g.appendChild(d);
+  });
+}
+function drawCart(){
+  var it=$("items");it.textContent="";var total=0,count=0;
+  P.forEach(function(x){
+    var q=cart[x.id];if(!q)return;total+=q*x.p;count+=q;
+    var r=document.createElement("div");r.className="ci";
+    r.innerHTML='<div class="em"></div><div class="in"></div><div class="qty"><button aria-label="Kamaytirish">−</button><span></span><button aria-label="Koʻpaytirish">+</button></div>';
+    r.children[0].textContent=x.e;
+    r.children[1].textContent=x.n+" — "+som(x.p);
+    var bs=r.querySelectorAll("button");r.querySelector("span").textContent=q;
+    bs[0].onclick=function(){cart[x.id]--;if(cart[x.id]<=0)delete cart[x.id];save();drawCart()};
+    bs[1].onclick=function(){cart[x.id]++;save();drawCart()};
+    it.appendChild(r);
+  });
+  if(!count){var e=document.createElement("div");e.className="none";e.textContent="Savat boʻsh. Mahsulot qoʻshing.";it.appendChild(e)}
+  $("cnt").textContent=count;$("total").textContent=som(total);
+}
+$("q").oninput=function(){term=this.value.trim().toLowerCase();drawGrid()};
+$("open").onclick=function(){document.body.classList.add("cart")};
+$("close").onclick=$("shade").onclick=function(){document.body.classList.remove("cart")};
+$("buy").onclick=function(){
+  if(!Object.keys(cart).length){toast("Avval savatga mahsulot qoʻshing");return}
+  var name=$("nm").value.trim(),phone=$("ph").value.trim(),addr=$("ad").value.trim();
+  if(!name||phone.replace(/\D/g,"").length<9||!addr){toast("Ism, telefon va manzilni toʻldiring");return}
+  var b=this;b.disabled=true;
+  fetch("/api/orders",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:name,phone:phone,address:addr,items:Object.keys(cart).map(function(k){return{id:+k,qty:cart[k]}})})})
+  .then(function(r){return r.json()}).then(function(j){
+    b.disabled=false;
+    if(!j.ok){toast(j.error||"Xatolik, qayta urinib koʻring");return}
+    cart={};save();drawCart();document.body.classList.remove("cart");toast("Buyurtma qabul qilindi. Raqam: "+j.id);
+  }).catch(function(){b.disabled=false;toast("Aloqa yoʻq, qayta urinib koʻring")});
+};
+fetch("/api/products").then(function(r){return r.json()}).then(function(l){P=l;drawCats();drawGrid();drawCart()}).catch(function(){toast("Mahsulotlar yuklanmadi")});
+drawCart();
+</script>
+</body>
+</html>

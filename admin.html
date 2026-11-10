@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin – Bozor</title>
+<style>
+:root{--bg:#f4f3f8;--card:#fff;--ink:#1c1830;--mute:#6f6a85;--line:#e4e1ee;--accent:#6a2fd0;--on:#fff}
+@media (prefers-color-scheme:dark){:root{--bg:#13111c;--card:#1d1a2b;--ink:#ece9f7;--mute:#9a94b3;--line:#2d2940;--accent:#9b6cff;--on:#120a26}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 "Segoe UI",system-ui,sans-serif}
+main{max-width:900px;margin:0 auto;padding:16px}
+h1{font-size:22px;margin:0 0 12px}h2{font-size:18px;margin:20px 0 8px}
+.c{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px}
+.h{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center;font-weight:600}
+.m{color:var(--mute);font-size:14px}
+input,select,button{font:inherit;padding:9px 12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+button{background:var(--accent);color:var(--on);border:0;font-weight:600;cursor:pointer}
+button.d{background:none;color:#e5365a;border:1px solid var(--line)}
+.f{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.pr{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)}
+a{color:var(--accent)}
+</style>
+</head>
+<body>
+<main>
+  <section id="login" class="c" hidden>
+    <h1>Admin kirish</h1>
+    <div class="f"><input id="pw" type="password" placeholder="Parol" autocomplete="current-password"><button id="go">Kirish</button></div>
+    <p class="m" id="err"></p>
+  </section>
+  <section id="panel" hidden>
+    <h1>Buyurtmalar</h1>
+    <div id="orders"></div>
+    <h2>Mahsulotlar</h2>
+    <div class="c">
+      <div class="f">
+        <input id="pn" placeholder="Nomi">
+        <input id="pp" type="number" placeholder="Narxi (soʻm)">
+        <input id="po" type="number" placeholder="Eski narx (ixtiyoriy)">
+        <input id="pc" placeholder="Kategoriya">
+        <input id="pe" placeholder="Belgi (emoji)">
+        <button id="add">Qoʻshish</button>
+      </div>
+    </div>
+    <div class="c" id="plist"></div>
+  </section>
+</main>
+<script>
+var pw=""; try{pw=sessionStorage.getItem("pw")||""}catch(e){}
+var ST=["Yangi","Qabul qilindi","Yetkazilmoqda","Yakunlandi","Bekor qilindi"],timer=null;
+function $(i){return document.getElementById(i)}
+function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!==undefined)e.textContent=x;return e}
+function som(n){return Number(n).toLocaleString("ru-RU").replace(/\u00a0/g," ")+" soʻm"}
+function api(url,data){
+  return fetch(url,{method:data?"POST":"GET",headers:{"Content-Type":"application/json","x-admin":pw},body:data?JSON.stringify(data):undefined})
+  .then(function(r){if(r.status===401){showLogin("Parol notoʻgʻri");throw new Error("auth")}return r.json()});
+}
+function showLogin(msg){clearInterval(timer);$("panel").hidden=true;$("login").hidden=false;$("err").textContent=msg||""}
+function start(){$("login").hidden=true;$("panel").hidden=false;loadAll();clearInterval(timer);timer=setInterval(loadOrders,15000)}
+function loadOrders(){
+  api("/api/admin/orders").then(function(list){
+    var box=$("orders");box.textContent="";
+    var n=list.filter(function(o){return o.status==="Yangi"}).length;
+    document.title=(n?"("+n+") ":"")+"Admin – Bozor";
+    if(!list.length){box.appendChild(el("div","c m","Hali buyurtma yoʻq."));return}
+    list.forEach(function(o){
+      var c=el("div","c"),h=el("div","h");
+      h.appendChild(el("span","","Buyurtma №"+o.id+" — "+som(o.total)));
+      var s=el("select");ST.forEach(function(x){var op=el("option","",x);if(x===o.status)op.selected=true;s.appendChild(op)});
+      s.onchange=function(){api("/api/admin/status",{id:o.id,status:s.value}).then(loadOrders)};
+      h.appendChild(s);c.appendChild(h);
+      c.appendChild(el("div","m",new Date(o.at).toLocaleString("uz-UZ")));
+      var p=el("div","",o.name+", ");var a=el("a","",o.phone);a.href="tel:"+o.phone.replace(/[^\d+]/g,"");p.appendChild(a);c.appendChild(p);
+      c.appendChild(el("div","",o.address));
+      o.items.forEach(function(i){c.appendChild(el("div","m",i.name+" × "+i.qty+" = "+som(i.price*i.qty)))});
+      box.appendChild(c);
+    });
+  }).catch(function(){});
+}
+function loadProducts(){
+  fetch("/api/products").then(function(r){return r.json()}).then(function(l){
+    var b=$("plist");b.textContent="";
+    l.forEach(function(x){
+      var r=el("div","pr");r.appendChild(el("span","",x.e+" "+x.n+" — "+som(x.p)));
+      var d=el("button","d","Oʻchirish");d.onclick=function(){if(confirm(x.n+" oʻchirilsinmi?"))api("/api/admin/delete",{id:x.id}).then(loadProducts)};
+      r.appendChild(d);b.appendChild(r);
+    });
+  });
+}
+function loadAll(){loadOrders();loadProducts()}
+$("go").onclick=function(){
+  pw=$("pw").value;try{sessionStorage.setItem("pw",pw)}catch(e){}
+  api("/api/admin/orders").then(start).catch(function(){});
+};
+$("pw").onkeydown=function(e){if(e.key==="Enter")$("go").click()};
+$("add").onclick=function(){
+  api("/api/admin/add",{n:$("pn").value,p:$("pp").value,o:$("po").value,c:$("pc").value,e:$("pe").value}).then(function(j){
+    if(j.error){alert(j.error);return}
+    ["pn","pp","po","pc","pe"].forEach(function(i){$(i).value=""});loadProducts();
+  });
+};
+if(pw){api("/api/admin/orders").then(start).catch(function(){})}else showLogin("");
+</script>
+</body>
+</html>
